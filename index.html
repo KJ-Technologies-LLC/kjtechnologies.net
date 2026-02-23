@@ -1583,7 +1583,7 @@ a:hover { color: var(--blue-light); }
       <div class="contact-form-wrapper fade-in">
         <h3>Send a Message</h3>
         <p>Describe your project or question and I'll respond within one business day.</p>
-        <form id="contactForm" action="https://formspree.io/f/placeholder" method="POST">
+        <form id="contactForm" action="https://formspree.io/f/xgolpljd" method="POST">
           <div class="form-row">
             <div class="form-group">
               <label for="name">Name</label>
@@ -1728,31 +1728,39 @@ a:hover { color: var(--blue-light); }
   form.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    // Build mailto link as fallback (no backend needed for static site)
-    var name = document.getElementById('name').value;
-    var email = document.getElementById('email').value;
-    var service = document.getElementById('service').value;
-    var message = document.getElementById('message').value;
+    var submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.textContent = 'Sending...';
+    submitBtn.disabled = true;
 
-    var subject = encodeURIComponent('Website Inquiry: ' + (service || 'General'));
-    var body = encodeURIComponent(
-      'Name: ' + name + '\n' +
-      'Email: ' + email + '\n' +
-      'Service: ' + (service || 'Not specified') + '\n\n' +
-      message
-    );
-
-    window.location.href = 'mailto:kevin.jaris@kjtechnologies.net?subject=' + subject + '&body=' + body;
-
-    // Show success state
-    form.style.display = 'none';
-    success.style.display = 'block';
-
-    // Reset after 5 seconds
-    setTimeout(function() {
-      form.style.display = '';
-      success.style.display = 'none';
-      form.reset();
+    fetch('https://formspree.io/f/xgolpljd', {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    }).then(function(response) {
+      if (response.ok) {
+        form.style.display = 'none';
+        success.style.display = 'block';
+        setTimeout(function() {
+          form.style.display = '';
+          success.style.display = 'none';
+          form.reset();
+          submitBtn.textContent = 'Send Message';
+          submitBtn.disabled = false;
+        }, 5000);
+      } else {
+        throw new Error('Form submission failed');
+      }
+    }).catch(function() {
+      // Fallback to mailto
+      var name = document.getElementById('name').value;
+      var email = document.getElementById('email').value;
+      var service = document.getElementById('service').value;
+      var message = document.getElementById('message').value;
+      var subject = encodeURIComponent('Website Inquiry: ' + (service || 'General'));
+      var body = encodeURIComponent('Name: ' + name + '\nEmail: ' + email + '\nService: ' + (service || 'Not specified') + '\n\n' + message);
+      window.location.href = 'mailto:kevin.jaris@kjtechnologies.net?subject=' + subject + '&body=' + body;
+      submitBtn.textContent = 'Send Message';
+      submitBtn.disabled = false;
     }, 5000);
   });
 })();
